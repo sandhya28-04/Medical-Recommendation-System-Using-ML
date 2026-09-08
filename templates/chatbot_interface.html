@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Medical Assistant Chatbot</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to bottom right, #eef4fd, #dbeafe);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .page-title h1 {
+      font-size: 30px;
+      font-weight: 700;
+      margin: 0;
+      color: #1f2937;
+    }
+
+    .page-title p {
+      font-size: 16px;
+      color: #4b5563;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+
+    .chat-wrapper {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      height: 580px;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      color: white;
+      padding: 20px 25px;
+      display: flex;
+      align-items: center;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+    }
+
+    .chat-header img {
+      width: 28px;
+      height: 28px;
+      margin-right: 12px;
+    }
+
+    .chat-header .status {
+      font-size: 13px;
+      color: #a5f3fc;
+      margin-top: 4px;
+    }
+
+    .chat-body {
+      flex-grow: 1;
+      padding: 20px;
+      background: #f9fafb;
+      overflow-y: auto;
+    }
+
+    .message {
+      background: white;
+      padding: 14px 18px;
+      border-radius: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      max-width: 90%;
+    }
+
+    .message.bot {
+      background: #f1f5f9;
+    }
+
+    .timestamp {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 6px;
+    }
+
+    .chat-input {
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      padding: 18px 20px;
+      background: white;
+    }
+
+    .chat-input input {
+      flex-grow: 1;
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      outline: none;
+    }
+
+    .chat-input button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin-left: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  
+
+  <div class="container">
+    <!-- 🏥 Heading -->
+    <div class="page-title">
+      <h1>🏥 Medical Assistant Chatbot</h1>
+      <p>
+        Get instant health guidance, symptom analysis, and medical information from our AI-powered assistant.<br>
+        Your health companion available 24/7.
+      </p>
+    </div>
+
+    <!-- 💬 Chat Interface -->
+    <div class="chat-wrapper">
+      <div class="chat-header">
+        <img src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png" alt="Stethoscope" />
+        <div>
+          <div style="font-weight:600; font-size:18px;">Health Assistant</div>
+          <div class="status">🟢 Online & Ready to Help</div>
+        </div>
+      </div>
+<div class="chat-body" id="chat-body">
+  {% if chat_history and chat_history|length > 0 %}
+    {% for msg in chat_history %}
+      <div class="message {{ msg.sender }}">
+        {{ msg.text }}
+      </div>
+    {% endfor %}
+  {% else %}
+     
+        <div class="message bot">
+          👋 Hello! How can I assist you with hospital recommendations or health queries today related to diet and disease?
+          </div>
+  {% endif %}
+  <div id="chat-end"></div>
+</div>
+
+      <form class="chat-input" id="chat-form">
+        <input type="text" id="user-input" placeholder="Type your message..." required />
+        <button type="submit">Send</button>
+      </form>
+    
+
+  <!-- 💬 JS Chat Script -->
+   <!-- Add this to your chatbot_interface.html, inside the <script> tag -->
+    <script>
+function renderHistory(history) {
+    const chatbox = document.getElementById('chat-body');
+    chatbox.innerHTML = '';
+    history.forEach(msg => {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message ' + msg.sender;
+        msgDiv.textContent = msg.text;
+        chatbox.appendChild(msgDiv);
+        
+    });
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+document.getElementById('chat-form').onsubmit = async function(e) {
+    e.preventDefault();
+    const input = document.getElementById('user-input');
+    const userText = input.value.trim();
+    if (!userText) return;
+    input.value = '';
+    const res = await fetch('/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message: userText})
+    });
+    const data = await res.json();
+    renderHistory(data.history);
+};
+</script>
+<script>
+function getCurrentTime() {
+    const now = new Date();
+    return now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}
+
+function appendMessage(sender, text) {
+    const chatbox = document.getElementById('chat-body');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'message ' + sender;
+    msgDiv.innerHTML = `${text} <span style="float:right;font-size:11px;color:#888;">${getCurrentTime()}</span>`;
+    chatbox.appendChild(msgDiv);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+document.getElementById('chat-form').onsubmit = async function(e) {
+    e.preventDefault();
+    const input = document.getElementById('user-input');
+    const userText = input.value.trim();
+    if (!userText) return;
+    appendMessage('user', userText);
+    input.value = '';
+    const res = await fetch('/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message: userText})
+    });
+    const data = await res.json();
+    
+    appendMessage('bot', data.reply);
+};
+</script>
+  <script>
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('user-input');
+    const chatBody = document.getElementById('chat-body');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message';
+      msgDiv.textContent = userText;
+      chatBody.appendChild(msgDiv);
+
+      input.value = '';
+      chatBody.scrollTop = chatBody.scrollHeight;
+
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message: userText})
+      });
+
+      const data = await res.json();
+      const botReply = document.createElement('div');
+      botReply.className = 'message bot';
+      botReply.textContent = data.reply;
+      chatBody.appendChild(botReply);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    });
+  </script>
+
+</body>
+</html>

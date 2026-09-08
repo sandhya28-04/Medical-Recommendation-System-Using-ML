@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Hospital Recommendations</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+    <style>
+        
+        body {
+            background-image: url('https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3NnUxb3I2bnZsMjQ2aWJ5MWI3djFhdzFxbmtzM29nZGE5cmNvbjE5dCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Do54lozXbaLv72i1wS/giphy.gif');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255,255,255,0.88);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+   
+<div class="container mt-5">
+    <a href="{{ url_for('chatbot_interface') }}" class="btn btn-primary mb-3">💬 Chat with Health Assistant</a>
+    <h3>Recommended Hospitals for {{ disease }}</h3>
+    
+    {% if hospital_recommendations %}
+    <ul class="list-group">
+    {% for hospital in hospital_recommendations %}
+    <li class="list-group-item">
+    <strong>{{ hospital.Hospital }}</strong>
+
+        
+        <a href="{{ hospital.DirectionLink }}" target="_blank" class="btn btn-sm btn-warning ms-2">Get Directions</a>
+        <button type="button" class="btn btn-sm btn-info ms-2" data-bs-toggle="modal" data-bs-target="#hospitalModal{{ loop.index }}">
+            Hospital Details
+      </button>
+        <br>
+<span>
+  {{ hospital.Hospital }}, 
+  {{ hospital.Location.split('(')[0].strip() }} 
+  ({{ hospital.Contact }})
+</span><br>
+<strong>Doctor:</strong> {{ hospital.Doctor }}
+<button type="button" class="btn btn-sm btn-success ms-2" data-bs-toggle="modal" data-bs-target="#doctorModal{{ loop.index }}">
+    Doctor Details
+    </button>
+  
+    
+        <!-- Hospital Modal -->
+        <div class="modal fade" id="hospitalModal{{ loop.index }}" tabindex="-1" aria-labelledby="hospitalModalLabel{{ loop.index }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="hospitalModalLabel{{ loop.index }}">Hospital Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <strong>About Hospital:</strong><br>
+                {{ hospital.HospitalDetails }}
+              </div>
+            </div>
+          </div>
+        </div>
+    
+                
+                <!-- Doctor Modal -->
+                <div class="modal fade" id="doctorModal{{ loop.index }}" tabindex="-1" aria-labelledby="doctorModalLabel{{ loop.index }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="doctorModalLabel{{ loop.index }}">{{ hospital.Doctor }} Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <strong>About Doctor:</strong><br>
+                                {{ hospital.DoctorDetails }}
+                            </div>
+                        </div>
+            </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p>No hospital recommendations available for this disease.</p>
+    {% endif %}
+    <a href="{{ url_for('interface') }}" class="btn btn-secondary mt-3">Back to Home</a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
